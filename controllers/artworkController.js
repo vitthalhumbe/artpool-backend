@@ -24,8 +24,9 @@ const createArtwork = async (req, res) => {
 };
 const getArtworksByUser = async (req, res) => {
   try {
-    const artworks = await Artwork.find({ artist: req.params.userId }).sort({ createdAt: -1 });
-    res.status(200).json(artworks);
+   const artworks = await Artwork.find({ artist: req.params.userId })
+      .sort({ createdAt: -1 })
+      .populate('artist', 'username profile.avatar_url');
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -86,4 +87,16 @@ const updateArtwork = async (req, res) => {
   }
 };
 
-module.exports = { createArtwork, getArtworksByUser, viewArtwork, likeArtwork, deleteArtwork,updateArtwork };
+const getAllArtworks = async (req, res) => {
+  try {
+    const artworks = await Artwork.find()
+      .sort({ createdAt: -1 }) 
+      .populate('artist', 'username profile.avatar_url');
+    
+    res.status(200).json(artworks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createArtwork, getArtworksByUser, getAllArtworks, viewArtwork, likeArtwork, deleteArtwork,updateArtwork };
