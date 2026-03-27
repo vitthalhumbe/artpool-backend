@@ -27,6 +27,7 @@ const getArtworksByUser = async (req, res) => {
    const artworks = await Artwork.find({ artist: req.params.userId })
       .sort({ createdAt: -1 })
       .populate('artist', 'username profile.avatar_url');
+      return res.status(200).json(artworks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
