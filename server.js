@@ -17,6 +17,8 @@ app.use(cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/blogs/', blogRoutes);
+app.use('/api/commissions', require('./routes/commissionRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGODB_URI);

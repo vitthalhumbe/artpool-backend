@@ -105,10 +105,45 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const toggleFollow = async (req, res) => {
+  try {
+    const targetUserId = req.params.id; // The profile being viewed
+    const currentUserId = req.body.userId; // The logged-in user clicking the button
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ message: "You cannot follow yourself." });
+    }
+
+    const targetUser = await User.findById(targetUserId);
+    const currentUser = await User.findById(currentUserId);
+
+    if (!targetUser || !currentUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const isFollowing = currentUser.following.includes(targetUserId);
+
+    if (isFollowing) {
+      // UNFOLLOW LOGIC
+      await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
+      res.status(200).json({ message: "Unfollowed successfully", isFollowing: false });
+    } else {
+      // FOLLOW LOGIC
+      await User.findByIdAndUpdate(currentUserId, { $addToSet: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: currentUserId } });
+      res.status(200).json({ message: "Followed successfully", isFollowing: true });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getMe,
   updateAvatar,
-  updateProfile
+  updateProfile,
+  toggleFollow
 };

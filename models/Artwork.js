@@ -20,7 +20,8 @@ const ArtworkSchema = new mongoose.Schema({
     likes_users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] 
 },
   
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  sold: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Artwork', ArtworkSchema);

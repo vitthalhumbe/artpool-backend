@@ -42,6 +42,14 @@ const UserSchema = new mongoose.Schema({
     average_rating: { type: Number, default: 0 },
     total_reviews: { type: Number, default: 0 }
   },
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

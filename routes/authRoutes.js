@@ -2,12 +2,16 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { registerUser, loginUser, getMe, updateAvatar, updateProfile } = require('../controllers/authController');
+const { toggleFollow } = require('../controllers/authController');
 
+// Add this line
+router.put('/users/:id/follow', toggleFollow);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/me', getMe);
 router.put('/update-avatar', updateAvatar);
 router.put('/update-profile', updateProfile);
+
 
 router.get('/users/:id', async (req, res) => {
   try {

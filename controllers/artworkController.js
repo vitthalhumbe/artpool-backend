@@ -1,5 +1,39 @@
 const Artwork = require('../models/Artwork');
+const User = require('../models/User'); // Make sure to import the User model at the top!
 
+// @desc    Get Home Feed (Followed Artists OR Top Liked)
+// @route   GET /api/artworks/feed/:userId?
+// @access  Public (Guest) or Private (Logged In)
+const getHomeFeed = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    let artworks = [];
+
+    // 1. IF LOGGED IN: Try to get artworks from followed artists
+    if (userId && userId !== 'undefined') {
+      const currentUser = await User.findById(userId);
+      
+      if (currentUser && currentUser.following.length > 0) {
+        artworks = await Artwork.find({ artist: { $in: currentUser.following } })
+          .sort({ createdAt: -1 })
+          .limit(20)
+          .populate('artist', 'username profile.avatar_url');
+      }
+    }
+
+    // 2. FALLBACK: If not logged in, OR user follows nobody, OR followed artists have 0 art
+    if (artworks.length === 0) {
+      artworks = await Artwork.find()
+        .sort({ 'stats.likes': -1, views: -1 }) // Sort by highest likes/views
+        .limit(20)
+        .populate('artist', 'username profile.avatar_url');
+    }
+
+    res.status(200).json(artworks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 const createArtwork = async (req, res) => {
   try {
     const { title, description, price, images, artist, category, tags } = req.body;
@@ -90,14 +124,39 @@ const updateArtwork = async (req, res) => {
 
 const getAllArtworks = async (req, res) => {
   try {
-    const artworks = await Artwork.find()
-      .sort({ createdAt: -1 }) 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const category = req.query.category || '';
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (category) query.category = category;
+
+    const total = await Artwork.countDocuments(query);
+    const artworks = await Artwork.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate('artist', 'username profile.avatar_url');
-    
-    res.status(200).json(artworks);
+
+    res.status(200).json({
+      artworks,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { createArtwork, getArtworksByUser, getAllArtworks, viewArtwork, likeArtwork, deleteArtwork,updateArtwork };
+module.exports = { createArtwork, getArtworksByUser, getAllArtworks, viewArtwork, likeArtwork, deleteArtwork,updateArtwork, getHomeFeed };
