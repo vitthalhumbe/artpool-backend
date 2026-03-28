@@ -82,15 +82,24 @@ const viewArtwork = async (req, res) => {
 const likeArtwork = async (req, res) => {
   try {
     const artwork = await Artwork.findById(req.params.id);
-    const userId = req.body.userId; 
-    if (artwork.stats.likes_users && artwork.stats.likes_users.includes(userId)) {
+    const userId = req.body.userId;
+    const isAlreadyLiked = artwork.stats.likes_users?.includes(userId);
+
+    if (isAlreadyLiked) {
       artwork.stats.likes_users.pull(userId);
       artwork.stats.likes--;
     } else {
       if (!artwork.stats.likes_users) artwork.stats.likes_users = [];
-      
       artwork.stats.likes_users.push(userId);
       artwork.stats.likes++;
+
+      const Notification = require('../models/Notification');
+      await Notification.create({
+        recipient: artwork.artist,
+        sender: userId,
+        type: 'like',
+        text: `liked your artwork "${artwork.title}"`
+      });
     }
 
     await artwork.save();
@@ -99,7 +108,6 @@ const likeArtwork = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const deleteArtwork = async (req, res) => {
   try {
     await Artwork.findByIdAndDelete(req.params.id);
