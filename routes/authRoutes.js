@@ -3,7 +3,12 @@ const router = express.Router();
 const User = require('../models/User');
 const { registerUser, loginUser, getMe, updateAvatar, updateProfile } = require('../controllers/authController');
 const { toggleFollow } = require('../controllers/authController');
+const { getArtists } = require('../controllers/authController');
+router.get('/artists', getArtists);
+const { forgotPassword, resetPassword } = require('../controllers/authController');
 
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:token', resetPassword);
 // Add this line
 router.put('/users/:id/follow', toggleFollow);
 router.post('/register', registerUser);

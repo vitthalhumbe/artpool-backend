@@ -11,6 +11,9 @@ const {
 } = require('../controllers/artworkController');
 const { getHomeFeed } = require('../controllers/artworkController');
 
+const { getFeaturedArtworks } = require('../controllers/artworkController');
+router.get('/featured', getFeaturedArtworks);
+
 router.get(['/feed', '/feed/:userId'], getHomeFeed);
 router.post('/', createArtwork);
 router.get('/user/:userId', getArtworksByUser);

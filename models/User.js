@@ -50,6 +50,8 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  resetPasswordToken: { type: String },
+resetPasswordExpire: { type: Date },
   createdAt: {
     type: Date,
     default: Date.now,
